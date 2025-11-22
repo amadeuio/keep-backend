@@ -3,14 +3,44 @@ const pool = require('../config/database');
 const Note = {
   findAll: async () => {
     const result = await pool.query(
-      'SELECT * FROM notes ORDER BY created_at DESC'
+      `SELECT 
+        n.*,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', l.id,
+              'name', l.name
+            )
+          ) FILTER (WHERE l.id IS NOT NULL),
+          '[]'::json
+        ) as labels
+      FROM notes n
+      LEFT JOIN note_labels nl ON n.id = nl.note_id
+      LEFT JOIN labels l ON nl.label_id = l.id
+      GROUP BY n.id
+      ORDER BY n.created_at DESC`
     );
     return result.rows;
   },
 
   findById: async (id) => {
     const result = await pool.query(
-      'SELECT * FROM notes WHERE id = $1',
+      `SELECT 
+        n.*,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', l.id,
+              'name', l.name
+            )
+          ) FILTER (WHERE l.id IS NOT NULL),
+          '[]'::json
+        ) as labels
+      FROM notes n
+      LEFT JOIN note_labels nl ON n.id = nl.note_id
+      LEFT JOIN labels l ON nl.label_id = l.id
+      WHERE n.id = $1
+      GROUP BY n.id`,
       [id]
     );
     return result.rows[0];
