@@ -22,8 +22,6 @@ const Note = {
         params.push(view.id);
         paramIndex++;
       }
-    } else {
-      conditions.push(`n.is_trashed = false`);
     }
 
     if (search && search.trim()) {
