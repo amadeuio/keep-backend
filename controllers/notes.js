@@ -44,18 +44,9 @@ const createNote = async (req, res, next) => {
 const updateNote = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content, colorId, isPinned, isArchived, isTrashed } = req.body;
+    const updates = req.body;
 
-    const note = await Note.update(
-      id,
-      title,
-      content,
-      colorId,
-      isPinned,
-      isArchived,
-      isTrashed
-    );
-
+    const note = await Note.update(id, updates);
     if (!note) {
       return res.status(404).json({ error: 'Note not found' });
     }
@@ -69,7 +60,10 @@ const updateNote = async (req, res, next) => {
 const deleteNote = async (req, res, next) => {
   try {
     const { id } = req.params;
+    console.log('DELETE request for:', id);  // ← Add this
+    
     const note = await Note.deleteById(id);
+    console.log('Deleted note:', note);  // ← And this
 
     if (!note) {
       return res.status(404).json({ error: 'Note not found' });

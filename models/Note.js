@@ -66,10 +66,46 @@ const Note = {
     return result.rows[0];
   },
 
-  update: async (id, title, content, colorId, isPinned, isArchived, isTrashed) => {
+  update: async (id, updates) => {
+    const fields = [];
+    const values = [];
+    let paramCount = 1;
+  
+    if (updates.title !== undefined) {
+      fields.push(`title = $${paramCount++}`);
+      values.push(updates.title);
+    }
+    if (updates.content !== undefined) {
+      fields.push(`content = $${paramCount++}`);
+      values.push(updates.content);
+    }
+    if (updates.color_id !== undefined) {
+      fields.push(`color_id = $${paramCount++}`);
+      values.push(updates.color_id);
+    }
+    if (updates.is_pinned !== undefined) {
+      fields.push(`is_pinned = $${paramCount++}`);
+      values.push(updates.is_pinned);
+    }
+    if (updates.is_archived !== undefined) {
+      fields.push(`is_archived = $${paramCount++}`);
+      values.push(updates.is_archived);
+    }
+    if (updates.is_trashed !== undefined) {
+      fields.push(`is_trashed = $${paramCount++}`);
+      values.push(updates.is_trashed);
+    }
+  
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+  
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+  
     const result = await pool.query(
-      'UPDATE notes SET title = $1, content = $2, color_id = $3, is_pinned = $4, is_archived = $5, is_trashed = $6, updated_at = NOW() WHERE id = $7 RETURNING *',
-      [title, content, colorId, isPinned, isArchived, isTrashed, id]
+      `UPDATE notes SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      values
     );
     return result.rows[0];
   },
