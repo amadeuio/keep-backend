@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import Label from "../models/Label";
 import Note from "../models/Note";
 import NoteLabel from "../models/NoteLabel";
@@ -116,8 +116,7 @@ const removeLabelFromNote = async (
 
 const createLabelAndAddToNote = async (
   req: Request<{ id: string }, {}, CreateLabelRequest>,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     const noteId = req.params.id;
@@ -128,7 +127,7 @@ const createLabelAndAddToNote = async (
 
     res.status(201).json({ id: labelId, name });
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: "create_label_and_add_to_note_failed" });
   }
 };
 

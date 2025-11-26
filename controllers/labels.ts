@@ -1,24 +1,19 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import Label from "../models/Label";
 import { CreateLabelRequest } from "../types/labels";
 
-const getAllLabels = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const getAllLabels = async (_req: Request, res: Response): Promise<void> => {
   try {
     const labels = await Label.findAll();
     res.json(labels);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: "get_all_labels_failed" });
   }
 };
 
 const createLabel = async (
   req: Request<{}, {}, CreateLabelRequest>,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     const labelData = req.body;
@@ -36,14 +31,13 @@ const createLabel = async (
     const label = await Label.create(labelData.id, labelData.name);
     res.status(201).json(label);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: "create_label_failed" });
   }
 };
 
 const updateLabel = async (
   req: Request<{ id: string }, {}, { name: string }>,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -63,14 +57,13 @@ const updateLabel = async (
 
     res.json(label);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: "update_label_failed" });
   }
 };
 
 const deleteLabel = async (
   req: Request<{ id: string }>,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -84,7 +77,7 @@ const deleteLabel = async (
 
     res.status(204).send();
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: "delete_label_failed" });
   }
 };
 
