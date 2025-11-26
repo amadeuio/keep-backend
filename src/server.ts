@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import bootstrapRoutes from "./routes/bootstrap.routes";
 import labelsRoutes from "./routes/labels.routes";
 import notesRoutes from "./routes/notes.routes";
 
@@ -12,6 +13,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/api/bootstrap", bootstrapRoutes);
 app.use("/api/notes", notesRoutes);
 app.use("/api/labels", labelsRoutes);
 
@@ -20,4 +22,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-

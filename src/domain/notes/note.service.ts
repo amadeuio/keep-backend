@@ -4,9 +4,23 @@ import { noteMappers } from "./note.mappers";
 import { NoteAPI, NoteCreateRequest, NoteUpdateRequest } from "./note.types";
 
 export const noteService = {
-  findAllWithLabels: async (): Promise<NoteAPI[]> => {
-    const notes = await noteQueries.findAllWithLabels();
-    return notes.map(noteMappers.dbToAPI);
+  findAll: async (): Promise<{
+    notesById: Record<string, NoteAPI>;
+    notesOrder: string[];
+  }> => {
+    const rows = await noteQueries.findAllWithLabels();
+    const sortedRows = [...rows].sort((a, b) => a.order - b.order);
+
+    const notesById: Record<string, NoteAPI> = {};
+    const notesOrder: string[] = [];
+
+    for (const row of sortedRows) {
+      const note = noteMappers.dbToAPI(row);
+      notesById[note.id] = note;
+      notesOrder.push(note.id);
+    }
+
+    return { notesById, notesOrder };
   },
 
   create: async (data: NoteCreateRequest): Promise<string> => {

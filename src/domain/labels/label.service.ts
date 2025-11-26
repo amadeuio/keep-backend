@@ -7,9 +7,16 @@ import {
 } from "./label.types";
 
 export const labelService = {
-  findAll: async (): Promise<LabelAPI[]> => {
+  findAll: async (): Promise<Record<string, LabelAPI>> => {
     const labels = await labelQueries.findAll();
-    return labels.map(labelMappers.dbToAPI);
+    const labelsById = labels.reduce(
+      (acc, label) => {
+        acc[label.id] = labelMappers.dbToAPI(label);
+        return acc;
+      },
+      {} as Record<string, LabelAPI>
+    );
+    return labelsById;
   },
 
   create: async (data: LabelCreateRequest): Promise<string> => {

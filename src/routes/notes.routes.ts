@@ -11,7 +11,7 @@ const router = express.Router();
 
 const getAllNotes = async (_req: Request, res: Response) => {
   try {
-    const notes = await noteService.findAllWithLabels();
+    const notes = await noteService.findAll();
     res.json(notes);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch notes" });
