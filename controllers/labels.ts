@@ -1,44 +1,39 @@
 import { Request, Response } from "express";
-import Label from "../models/Label";
-import { CreateLabelRequest } from "../types/labels";
+import LabelModel from "../models/Label";
+import { LabelCreateRequest, LabelUpdateRequest } from "../types/labels";
 
-const getAllLabels = async (_req: Request, res: Response): Promise<void> => {
+const getAllLabels = async (_req: Request, res: Response) => {
   try {
-    const labels = await Label.findAll();
+    const labels = await LabelModel.findAll();
     res.json(labels);
   } catch (error) {
-    res.status(500).json({ error: "get_all_labels_failed" });
+    res.status(500).json({ error: "Failed to fetch labels" });
   }
 };
 
 const createLabel = async (
-  req: Request<{}, {}, CreateLabelRequest>,
+  req: Request<{}, {}, LabelCreateRequest>,
   res: Response
-): Promise<void> => {
+) => {
   try {
-    const labelData = req.body;
+    const { id, name } = req.body;
 
-    if (!labelData.id) {
-      res.status(400).json({ error: "Label id is required" });
+    if (!id || !name) {
+      res.status(400).json({ error: "id and name are required" });
       return;
     }
 
-    if (!labelData.name) {
-      res.status(400).json({ error: "Label name is required" });
-      return;
-    }
-
-    const label = await Label.create(labelData.id, labelData.name);
+    const label = await LabelModel.create(id, name);
     res.status(201).json(label);
   } catch (error) {
-    res.status(500).json({ error: "create_label_failed" });
+    res.status(500).json({ error: "Failed to create label" });
   }
 };
 
 const updateLabel = async (
-  req: Request<{ id: string }, {}, { name: string }>,
+  req: Request<{ id: string }, {}, LabelUpdateRequest>,
   res: Response
-): Promise<void> => {
+) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
@@ -48,7 +43,7 @@ const updateLabel = async (
       return;
     }
 
-    const label = await Label.update(id, name);
+    const label = await LabelModel.update(id, name);
 
     if (!label) {
       res.status(404).json({ error: "Label not found" });
@@ -57,18 +52,14 @@ const updateLabel = async (
 
     res.json(label);
   } catch (error) {
-    res.status(500).json({ error: "update_label_failed" });
+    res.status(500).json({ error: "Failed to update label" });
   }
 };
 
-const deleteLabel = async (
-  req: Request<{ id: string }>,
-  res: Response
-): Promise<void> => {
+const deleteLabel = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-
-    const label = await Label.deleteById(id);
+    const label = await LabelModel.delete(id);
 
     if (!label) {
       res.status(404).json({ error: "Label not found" });
@@ -77,7 +68,7 @@ const deleteLabel = async (
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: "delete_label_failed" });
+    res.status(500).json({ error: "Failed to delete label" });
   }
 };
 

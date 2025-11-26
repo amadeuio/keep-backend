@@ -1,133 +1,152 @@
 import { Request, Response } from "express";
-import Label from "../models/Label";
-import Note from "../models/Note";
-import NoteLabel from "../models/NoteLabel";
-import { CreateLabelRequest } from "../types/labels";
-import { CreateNoteRequest, NoteUpdateRequest } from "../types/notes";
+import LabelModel from "../models/Label";
+import NoteModel from "../models/Note";
+import NoteLabelModel from "../models/NoteLabel";
+import { LabelCreateRequest } from "../types/labels";
+import { NoteCreateRequest, NoteUpdateRequest } from "../types/notes";
 
-const getAllNotes = async (_req: Request, res: Response): Promise<void> => {
+const getAllNotes = async (_req: Request, res: Response) => {
   try {
-    const notes = await Note.getAll();
+    const notes = await NoteModel.findAll();
     res.json(notes);
   } catch (error) {
-    res.status(500).json({ error: "get_all_notes_failed" });
+    res.status(500).json({ error: "Failed to fetch notes" });
   }
 };
 
 const createNote = async (
-  req: Request<{}, {}, CreateNoteRequest>,
+  req: Request<{}, {}, NoteCreateRequest>,
   res: Response
-): Promise<void> => {
-  const { id, title, content, colorId, isPinned, isArchived, labelIds } =
-    req.body;
-
-  if (!id) {
-    res.status(400).json({ error: "missing_id" });
-    return;
-  }
-
+) => {
   try {
-    const note = await Note.create({
+    const { id, title, content, colorId, isPinned, isArchived, labelIds } =
+      req.body;
+
+    if (!id) {
+      res.status(400).json({ error: "id is required" });
+      return;
+    }
+
+    const note = await NoteModel.create(
       id,
       title,
       content,
       colorId,
       isPinned,
-      isArchived,
-    });
+      isArchived
+    );
 
     if (Array.isArray(labelIds) && labelIds.length > 0) {
-      await NoteLabel.addLabelsToNote(note.id, labelIds);
+      await NoteLabelModel.addLabelsToNote(note.id, labelIds);
     }
 
-    res.status(201).json({ data: note });
+    res.status(201).json(note);
   } catch (error) {
-    res.status(500).json({ error: "create_note_failed" });
+    res.status(500).json({ error: "Failed to create note" });
   }
 };
 
 const updateNote = async (
   req: Request<{ id: string }, {}, NoteUpdateRequest>,
   res: Response
-): Promise<void> => {
+) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const { title, content, colorId, isPinned, isArchived } = req.body;
 
-    const note = await Note.update(id, updates);
+    const note = await NoteModel.update(
+      id,
+      title,
+      content,
+      colorId,
+      isPinned,
+      isArchived
+    );
 
     if (!note) {
-      res.status(404).json({ error: "note_not_found" });
+      res.status(404).json({ error: "Note not found" });
       return;
     }
 
     res.json(note);
   } catch (error) {
-    res.status(500).json({ error: "update_note_failed" });
+    res.status(500).json({ error: "Failed to update note" });
   }
 };
 
-const deleteNote = async (
-  req: Request<{ id: string }>,
-  res: Response
-): Promise<void> => {
+const deleteNote = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    const note = await Note.deleteById(id);
+    const note = await NoteModel.delete(id);
 
     if (!note) {
-      res.status(404).json({ error: "note_not_found" });
+      res.status(404).json({ error: "Note not found" });
       return;
     }
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: "delete_note_failed" });
+    res.status(500).json({ error: "Failed to delete note" });
   }
 };
 
 const addLabelToNote = async (
   req: Request<{ id: string; labelId: string }>,
   res: Response
-): Promise<void> => {
+) => {
   try {
     const { id, labelId } = req.params;
 
-    await NoteLabel.addLabelToNote(id, labelId);
+    if (!id || !labelId) {
+      res.status(400).json({ error: "id and labelId are required" });
+      return;
+    }
+
+    await NoteLabelModel.addLabelToNote(id, labelId);
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: "add_label_to_note_failed" });
+    res.status(500).json({ error: "Failed to add label to note" });
   }
 };
 
 const removeLabelFromNote = async (
   req: Request<{ id: string; labelId: string }>,
   res: Response
-): Promise<void> => {
+) => {
   try {
     const { id, labelId } = req.params;
 
-    await NoteLabel.removeLabelFromNote(id, labelId);
+    if (!id || !labelId) {
+      res.status(400).json({ error: "id and labelId are required" });
+      return;
+    }
+
+    await NoteLabelModel.removeLabelFromNote(id, labelId);
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: "remove_label_from_note_failed" });
+    res.status(500).json({ error: "Failed to remove label from note" });
   }
 };
 
 const createLabelAndAddToNote = async (
-  req: Request<{ id: string }, {}, CreateLabelRequest>,
+  req: Request<{ id: string }, {}, LabelCreateRequest>,
   res: Response
-): Promise<void> => {
+) => {
   try {
-    const noteId = req.params.id;
+    const { id } = req.params;
     const { id: labelId, name } = req.body;
 
-    await Label.create(labelId, name);
-    await NoteLabel.addLabelToNote(noteId, labelId);
+    if (!id || !labelId || !name) {
+      res.status(400).json({ error: "id, labelId and name are required" });
+      return;
+    }
 
-    res.status(201).json({ id: labelId, name });
+    const label = await LabelModel.create(labelId, name);
+    await NoteLabelModel.addLabelToNote(id, labelId);
+
+    res.status(201).json(label);
   } catch (error) {
-    res.status(500).json({ error: "create_label_and_add_to_note_failed" });
+    res.status(500).json({ error: "Failed to create label and add to note" });
   }
 };
 

@@ -1,29 +1,29 @@
 import pool from "../config/database";
 
-const NoteLabel = {
-  addLabelToNote: async (noteId: string, labelId: string): Promise<void> => {
-    const query = `
-      INSERT INTO note_labels (note_id, label_id)
-      VALUES ($1, $2)
-      ON CONFLICT (note_id, label_id) DO NOTHING
-    `;
-    await pool.query(query, [noteId, labelId]);
+const NoteLabelModel = {
+  addLabelToNote: async (noteId: string, labelId: string): Promise<boolean> => {
+    const result = await pool.query(
+      "INSERT INTO note_labels (note_id, label_id) VALUES ($1, $2) ON CONFLICT (note_id, label_id) DO NOTHING",
+      [noteId, labelId]
+    );
+    return result.rowCount ? result.rowCount > 0 : false;
   },
 
   removeLabelFromNote: async (
     noteId: string,
     labelId: string
-  ): Promise<void> => {
-    const query = `
-      DELETE FROM note_labels WHERE note_id = $1 AND label_id = $2
-    `;
-    await pool.query(query, [noteId, labelId]);
+  ): Promise<boolean> => {
+    const result = await pool.query(
+      "DELETE FROM note_labels WHERE note_id = $1 AND label_id = $2",
+      [noteId, labelId]
+    );
+    return result.rowCount ? result.rowCount > 0 : false;
   },
 
   addLabelsToNote: async (
     noteId: string,
     labelIds: string[]
-  ): Promise<void> => {
+  ): Promise<boolean> => {
     const values = [];
     const params = [noteId];
     let paramIndex = 2;
@@ -40,8 +40,9 @@ const NoteLabel = {
       ON CONFLICT (note_id, label_id) DO NOTHING
     `;
 
-    await pool.query(query, params);
+    const result = await pool.query(query, params);
+    return result.rowCount ? result.rowCount > 0 : false;
   },
 };
 
-export default NoteLabel;
+export default NoteLabelModel;

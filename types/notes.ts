@@ -10,15 +10,19 @@ export interface Note {
   updatedAt: Date;
 }
 
-export type CreateNoteRequest = {
-  id: string;
-  title: string;
-  content: string;
-  colorId: string;
-  isPinned: boolean;
-  isArchived: boolean;
+export interface NoteWithLabels extends Note {
   labelIds: string[];
-};
+}
+
+export interface NoteCreateRequest {
+  id: string;
+  title?: string;
+  content?: string;
+  colorId?: string;
+  isPinned?: boolean;
+  isArchived?: boolean;
+  labelIds?: string[];
+}
 
 export interface NoteUpdateRequest {
   title?: string;

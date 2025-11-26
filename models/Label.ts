@@ -1,37 +1,38 @@
 import pool from "../config/database";
-import { Label as LabelType } from "../types/labels";
+import { Label } from "../types/labels";
+import { keysToCamel } from "../utils/caseConverter";
 
-const Label = {
-  findAll: async (): Promise<LabelType[]> => {
+const LabelModel = {
+  findAll: async (): Promise<Label[]> => {
     const result = await pool.query(
       "SELECT * FROM labels ORDER BY created_at DESC"
     );
-    return result.rows;
+    return result.rows.map(keysToCamel);
   },
 
-  create: async (id: string, name: string): Promise<LabelType> => {
+  create: async (id: string, name: string): Promise<Label> => {
     const result = await pool.query(
       "INSERT INTO labels (id, name) VALUES ($1, $2) RETURNING *",
       [id, name]
     );
-    return result.rows[0];
+    return keysToCamel(result.rows[0]);
   },
 
-  update: async (id: string, name: string): Promise<LabelType> => {
+  update: async (id: string, name: string): Promise<Label> => {
     const result = await pool.query(
       "UPDATE labels SET name = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
       [name, id]
     );
-    return result.rows[0];
+    return keysToCamel(result.rows[0]);
   },
 
-  deleteById: async (id: string): Promise<LabelType | undefined> => {
+  delete: async (id: string): Promise<boolean> => {
     const result = await pool.query(
       "DELETE FROM labels WHERE id = $1 RETURNING *",
       [id]
     );
-    return result.rows[0];
+    return result.rowCount ? result.rowCount > 0 : false;
   },
 };
 
-export default Label;
+export default LabelModel;
