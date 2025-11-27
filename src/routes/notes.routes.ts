@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { authenticate } from "../middleware/auth.middleware";
 import { labelService } from "../domain/labels/label.service";
 import { LabelCreateRequest } from "../domain/labels/label.types";
 import { noteService } from "../domain/notes/note.service";
@@ -9,9 +10,9 @@ import {
 
 const router = express.Router();
 
-const getAllNotes = async (_req: Request, res: Response) => {
+const getAllNotes = async (req: Request, res: Response) => {
   try {
-    const notes = await noteService.findAll();
+    const notes = await noteService.findAll(req.userId!);
     res.json(notes);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch notes" });
@@ -30,7 +31,7 @@ const createNote = async (
       return;
     }
 
-    const noteId = await noteService.create(data);
+    const noteId = await noteService.create(req.userId!, data);
     res.status(201).json(noteId);
   } catch (error) {
     res.status(500).json({ error: "Failed to create note" });
@@ -45,7 +46,7 @@ const updateNote = async (
     const { id } = req.params;
     const data = req.body;
 
-    const noteId = await noteService.update(id, data);
+    const noteId = await noteService.update(req.userId!, id, data);
 
     if (!noteId) {
       res.status(404).json({ error: "Note not found" });
@@ -61,7 +62,7 @@ const updateNote = async (
 const deleteNote = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = await noteService.delete(id);
+    const deleted = await noteService.delete(req.userId!, id);
 
     if (!deleted) {
       res.status(404).json({ error: "Note not found" });
@@ -125,7 +126,7 @@ const createLabelAndAddToNote = async (
       return;
     }
 
-    const label = await labelService.create(labelData);
+    const label = await labelService.create(req.userId!, labelData);
     await noteService.addLabel(id, labelData.id);
 
     res.status(201).json(label);
@@ -146,20 +147,20 @@ const reorderNotes = async (
       return;
     }
 
-    await noteService.reorder(noteIds);
+    await noteService.reorder(req.userId!, noteIds);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: "Failed to reorder notes" });
   }
 };
 
-router.get("/", getAllNotes);
-router.post("/", createNote);
-router.put("/:id", updateNote);
-router.delete("/:id", deleteNote);
-router.post("/:id/labels/:labelId", addLabelToNote);
-router.delete("/:id/labels/:labelId", removeLabelFromNote);
-router.post("/:id/labels", createLabelAndAddToNote);
-router.post("/reorder", reorderNotes);
+router.get("/", authenticate, getAllNotes);
+router.post("/", authenticate, createNote);
+router.put("/:id", authenticate, updateNote);
+router.delete("/:id", authenticate, deleteNote);
+router.post("/:id/labels/:labelId", authenticate, addLabelToNote);
+router.delete("/:id/labels/:labelId", authenticate, removeLabelFromNote);
+router.post("/:id/labels", authenticate, createLabelAndAddToNote);
+router.post("/reorder", authenticate, reorderNotes);
 
 export default router;

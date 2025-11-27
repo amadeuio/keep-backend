@@ -7,8 +7,8 @@ import {
 } from "./label.types";
 
 export const labelService = {
-  findAll: async (): Promise<Record<string, LabelAPI>> => {
-    const labels = await labelQueries.findAll();
+  findAll: async (userId: string): Promise<Record<string, LabelAPI>> => {
+    const labels = await labelQueries.findAll(userId);
     const labelsById = labels.reduce(
       (acc, label) => {
         acc[label.id] = labelMappers.dbToAPI(label);
@@ -19,17 +19,24 @@ export const labelService = {
     return labelsById;
   },
 
-  create: async (data: LabelCreateRequest): Promise<string> => {
-    const label = await labelQueries.create(data.id, data.name);
+  create: async (
+    userId: string,
+    data: LabelCreateRequest
+  ): Promise<string> => {
+    const label = await labelQueries.create(userId, data.id, data.name);
     return label.id;
   },
 
-  update: async (id: string, data: LabelUpdateRequest): Promise<string> => {
-    const label = await labelQueries.update(id, data.name);
+  update: async (
+    userId: string,
+    id: string,
+    data: LabelUpdateRequest
+  ): Promise<string> => {
+    const label = await labelQueries.update(userId, id, data.name);
     return label.id;
   },
 
-  delete: async (id: string): Promise<boolean> => {
-    return await labelQueries.delete(id);
+  delete: async (userId: string, id: string): Promise<boolean> => {
+    return await labelQueries.delete(userId, id);
   },
 };

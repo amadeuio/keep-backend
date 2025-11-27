@@ -4,11 +4,11 @@ import { noteMappers } from "./note.mappers";
 import { NoteAPI, NoteCreateRequest, NoteUpdateRequest } from "./note.types";
 
 export const noteService = {
-  findAll: async (): Promise<{
+  findAll: async (userId: string): Promise<{
     notesById: Record<string, NoteAPI>;
     notesOrder: string[];
   }> => {
-    const rows = await noteQueries.findAllWithLabels();
+    const rows = await noteQueries.findAllWithLabels(userId);
     const sortedRows = [...rows].sort((a, b) => a.order - b.order);
 
     const notesById: Record<string, NoteAPI> = {};
@@ -23,10 +23,14 @@ export const noteService = {
     return { notesById, notesOrder };
   },
 
-  create: async (data: NoteCreateRequest): Promise<string> => {
-    const minOrder = await noteQueries.getMinOrder();
+  create: async (
+    userId: string,
+    data: NoteCreateRequest
+  ): Promise<string> => {
+    const minOrder = await noteQueries.getMinOrder(userId);
 
     const note = await noteQueries.create(
+      userId,
       data.id,
       minOrder,
       data.title,
@@ -43,8 +47,13 @@ export const noteService = {
     return note.id;
   },
 
-  update: async (id: string, data: NoteUpdateRequest): Promise<string> => {
+  update: async (
+    userId: string,
+    id: string,
+    data: NoteUpdateRequest
+  ): Promise<string> => {
     const note = await noteQueries.update(
+      userId,
       id,
       data.title,
       data.content,
@@ -56,8 +65,8 @@ export const noteService = {
     return note.id;
   },
 
-  delete: async (id: string): Promise<boolean> => {
-    return await noteQueries.delete(id);
+  delete: async (userId: string, id: string): Promise<boolean> => {
+    return await noteQueries.delete(userId, id);
   },
 
   addLabel: async (noteId: string, labelId: string): Promise<void> => {
@@ -68,10 +77,10 @@ export const noteService = {
     await noteLabelQueries.removeLabelFromNote(noteId, labelId);
   },
 
-  reorder: async (noteIds: string[]): Promise<void> => {
+  reorder: async (userId: string, noteIds: string[]): Promise<void> => {
     const updates: { id: string; order: number }[] = noteIds.map(
       (id, index) => ({ id, order: index })
     );
-    await noteQueries.updateOrders(updates);
+    await noteQueries.updateOrders(userId, updates);
   },
 };

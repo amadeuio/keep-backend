@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { authenticate } from "../middleware/auth.middleware";
 import { labelService } from "../domain/labels/label.service";
 import {
   LabelCreateRequest,
@@ -7,9 +8,9 @@ import {
 
 const router = express.Router();
 
-const getAllLabels = async (_req: Request, res: Response) => {
+const getAllLabels = async (req: Request, res: Response) => {
   try {
-    const labels = await labelService.findAll();
+    const labels = await labelService.findAll(req.userId!);
     res.json(labels);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch labels" });
@@ -28,7 +29,7 @@ const createLabel = async (
       return;
     }
 
-    const labelId = await labelService.create(data);
+    const labelId = await labelService.create(req.userId!, data);
     res.status(201).json(labelId);
   } catch (error) {
     res.status(500).json({ error: "Failed to create label" });
@@ -48,7 +49,7 @@ const updateLabel = async (
       return;
     }
 
-    const labelId = await labelService.update(id, data);
+    const labelId = await labelService.update(req.userId!, id, data);
 
     if (!labelId) {
       res.status(404).json({ error: "Label not found" });
@@ -64,7 +65,7 @@ const updateLabel = async (
 const deleteLabel = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = await labelService.delete(id);
+    const deleted = await labelService.delete(req.userId!, id);
 
     if (!deleted) {
       res.status(404).json({ error: "Label not found" });
@@ -77,9 +78,9 @@ const deleteLabel = async (req: Request<{ id: string }>, res: Response) => {
   }
 };
 
-router.get("/", getAllLabels);
-router.post("/", createLabel);
-router.put("/:id", updateLabel);
-router.delete("/:id", deleteLabel);
+router.get("/", authenticate, getAllLabels);
+router.post("/", authenticate, createLabel);
+router.put("/:id", authenticate, updateLabel);
+router.delete("/:id", authenticate, deleteLabel);
 
 export default router;
