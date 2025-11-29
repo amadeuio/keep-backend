@@ -95,7 +95,7 @@ export const noteQueries = {
     }
 
     fields.push(`updated_at = NOW()`);
-    values.push(userId, id);
+    values.push(id, userId);
 
     const query = `UPDATE notes SET ${fields.join(", ")} WHERE id = $${paramCount} AND user_id = $${paramCount + 1} RETURNING *`;
 
