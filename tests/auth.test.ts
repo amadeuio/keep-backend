@@ -1,0 +1,146 @@
+import {
+  api,
+  getAuthToken,
+  loginUser,
+  registerUser,
+} from "./helpers/testHelpers";
+
+describe("Auth Endpoints", () => {
+  describe("POST /api/auth/register", () => {
+    it("should register a new user with valid credentials", async () => {
+      const uniqueEmail = `test${Date.now()}@example.com`;
+      const response = await registerUser(uniqueEmail, "password123");
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("user");
+      expect(response.body).toHaveProperty("token");
+      expect(response.body.user).toHaveProperty("id");
+      expect(response.body.user).toHaveProperty("email");
+    });
+
+    it("should return 400 when email is missing", async () => {
+      const response = await api.post("/api/auth/register").send({
+        password: "password123",
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 when password is missing", async () => {
+      const response = await api.post("/api/auth/register").send({
+        email: "test@example.com",
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 when email format is invalid", async () => {
+      const response = await api.post("/api/auth/register").send({
+        email: "invalid-email",
+        password: "password123",
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return error when registering duplicate email", async () => {
+      const uniqueEmail = `test${Date.now()}@example.com`;
+
+      // Register first time
+      await registerUser(uniqueEmail, "password123");
+
+      // Try to register again with same email
+      const response = await registerUser(uniqueEmail, "password123");
+
+      expect(response.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe("POST /api/auth/login", () => {
+    it("should login with valid credentials", async () => {
+      const uniqueEmail = `test${Date.now()}@example.com`;
+      await registerUser(uniqueEmail, "password123");
+
+      const response = await loginUser(uniqueEmail, "password123");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("user");
+      expect(response.body).toHaveProperty("token");
+      expect(response.body.user).toHaveProperty("id");
+      expect(response.body.user).toHaveProperty("email");
+    });
+
+    it("should return 400 when email is missing", async () => {
+      const response = await api.post("/api/auth/login").send({
+        password: "password123",
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 when password is missing", async () => {
+      const response = await api.post("/api/auth/login").send({
+        email: "test@example.com",
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 401 when user does not exist", async () => {
+      const response = await loginUser(
+        `nonexistent${Date.now()}@example.com`,
+        "password123"
+      );
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 401 when password is incorrect", async () => {
+      const uniqueEmail = `test${Date.now()}@example.com`;
+      await registerUser(uniqueEmail, "password123");
+
+      const response = await loginUser(uniqueEmail, "wrongpassword");
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("GET /api/auth/me", () => {
+    it("should return user info when authenticated", async () => {
+      const token = await getAuthToken();
+
+      const response = await api
+        .get("/api/auth/me")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("id");
+      expect(response.body).toHaveProperty("email");
+      expect(response.body).not.toHaveProperty("password");
+    });
+
+    it("should return 401 when not authenticated", async () => {
+      const response = await api.get("/api/auth/me");
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 401 when token is invalid", async () => {
+      const response = await api
+        .get("/api/auth/me")
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 401 when Authorization header is malformed", async () => {
+      const token = await getAuthToken();
+
+      const response = await api
+        .get("/api/auth/me")
+        .set("Authorization", token); // Missing "Bearer" prefix
+
+      expect(response.status).toBe(401);
+    });
+  });
+});
