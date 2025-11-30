@@ -1,7 +1,7 @@
-import { LabelDB } from "../../domain/labels/label.types";
-import pool from "../client";
+import pool from "../../db/client";
+import { LabelDB } from "./label.types";
 
-export const labelQueries = {
+export const labelRepository = {
   findAll: async (userId: string): Promise<LabelDB[]> => {
     const result = await pool.query(
       "SELECT * FROM labels WHERE user_id = $1 ORDER BY created_at DESC",
@@ -42,3 +42,4 @@ export const labelQueries = {
     return result.rowCount ? result.rowCount > 0 : false;
   },
 };
+

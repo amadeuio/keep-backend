@@ -1,7 +1,7 @@
-import { UserDB } from "../../domain/users/user.types";
-import pool from "../client";
+import pool from "../../db/client";
+import { UserDB } from "./user.types";
 
-export const userQueries = {
+export const userRepository = {
   findByEmail: async (email: string): Promise<UserDB | null> => {
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
@@ -28,3 +28,4 @@ export const userQueries = {
     return result.rows[0];
   },
 };
+

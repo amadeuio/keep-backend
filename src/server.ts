@@ -1,12 +1,11 @@
 import cors from "cors";
 import express from "express";
-import authRoutes from "./routes/auth.routes";
-import bootstrapRoutes from "./routes/bootstrap.routes";
-import labelsRoutes from "./routes/labels.routes";
-import notesRoutes from "./routes/notes.routes";
-import "./types/express";
-import { env } from "./utils/env";
+import { bootstrapRouter } from "./domain/bootstrap";
+import { labelsRouter } from "./domain/labels";
+import { notesRouter } from "./domain/notes";
+import { usersRouter } from "./domain/users";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
+import { env } from "./utils/env";
 
 const app = express();
 
@@ -17,10 +16,10 @@ app.use(
   })
 );
 app.use(express.json());
-app.use("/api/bootstrap", bootstrapRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/notes", notesRoutes);
-app.use("/api/labels", labelsRoutes);
+app.use("/api/bootstrap", bootstrapRouter);
+app.use("/api/auth", usersRouter);
+app.use("/api/notes", notesRouter);
+app.use("/api/labels", labelsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

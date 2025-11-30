@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { userQueries } from "../../db/queries/users";
-import { AuthError, ConflictError } from "../../errors/AppError";
+import { AuthError, ConflictError } from "../../utils/AppError";
 import { hashPassword, verifyPassword } from "../../utils/crypto";
 import { createToken } from "../../utils/jwt";
 import { userMappers } from "./user.mappers";
@@ -10,10 +9,11 @@ import {
   UserAPI,
   UserCreateRequest,
 } from "./user.types";
+import { userRepository } from "./users.repository";
 
 export const userService = {
   register: async (data: UserCreateRequest): Promise<AuthResponse> => {
-    const existingUser = await userQueries.findByEmail(data.email);
+    const existingUser = await userRepository.findByEmail(data.email);
     if (existingUser) {
       throw new ConflictError("User already exists");
     }
@@ -21,7 +21,7 @@ export const userService = {
     const passwordHash = await hashPassword(data.password);
 
     const userId = uuidv4();
-    const user = await userQueries.create(userId, data.email, passwordHash);
+    const user = await userRepository.create(userId, data.email, passwordHash);
 
     const token = await createToken(user.id);
 
@@ -32,7 +32,7 @@ export const userService = {
   },
 
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const user = await userQueries.findByEmail(data.email);
+    const user = await userRepository.findByEmail(data.email);
     if (!user) {
       throw new AuthError("Invalid credentials");
     }
@@ -51,7 +51,7 @@ export const userService = {
   },
 
   findById: async (id: string): Promise<UserAPI | null> => {
-    const user = await userQueries.findById(id);
+    const user = await userRepository.findById(id);
     return user ? userMappers.dbToAPI(user) : null;
   },
 };

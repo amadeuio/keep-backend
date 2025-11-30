@@ -1,10 +1,14 @@
 import express, { Request, Response } from "express";
-import { userService } from "../domain/users/user.service";
-import { AuthError, NotFoundError, ValidationError } from "../errors/AppError";
-import { authenticate } from "../middleware/auth.middleware";
-import { asyncHandler } from "../utils/asyncHandler";
+import { authenticate } from "../../middleware/auth.middleware";
+import {
+  AuthError,
+  NotFoundError,
+  ValidationError,
+} from "../../utils/AppError";
+import { asyncHandler } from "../../utils/asyncHandler";
+import { userService } from "./user.service";
 
-  const router = express.Router();
+const router = express.Router();
 
 const register = asyncHandler(
   async (

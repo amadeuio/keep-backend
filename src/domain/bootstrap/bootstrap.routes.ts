@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
-import { authenticate } from "../middleware/auth.middleware";
-import { bootstrapService } from "../domain/bootstrap/bootstrap.service";
-import { asyncHandler } from "../utils/asyncHandler";
+import { authenticate } from "../../middleware/auth.middleware";
+import { asyncHandler } from "../../utils/asyncHandler";
+import { bootstrapService } from "./bootstrap.service";
 
 const router = express.Router();
 

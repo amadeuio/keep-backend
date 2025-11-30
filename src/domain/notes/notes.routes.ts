@@ -1,14 +1,11 @@
 import express, { Request, Response } from "express";
-import { labelService } from "../domain/labels/label.service";
-import { LabelCreateRequest } from "../domain/labels/label.types";
-import { noteService } from "../domain/notes/note.service";
-import {
-  NoteCreateRequest,
-  NoteUpdateRequest,
-} from "../domain/notes/note.types";
-import { NotFoundError, ValidationError } from "../errors/AppError";
-import { authenticate } from "../middleware/auth.middleware";
-import { asyncHandler } from "../utils/asyncHandler";
+import { authenticate } from "../../middleware/auth.middleware";
+import { NotFoundError, ValidationError } from "../../utils/AppError";
+import { asyncHandler } from "../../utils/asyncHandler";
+import { labelService } from "../labels/label.service";
+import { LabelCreateRequest } from "../labels/label.types";
+import { noteService } from "./note.service";
+import { NoteCreateRequest, NoteUpdateRequest } from "./note.types";
 
 const router = express.Router();
 

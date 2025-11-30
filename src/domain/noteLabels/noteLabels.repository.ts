@@ -1,6 +1,6 @@
-import pool from "../client";
+import pool from "../../db/client";
 
-export const noteLabelQueries = {
+export const noteLabelRepository = {
   addLabelToNote: async (noteId: string, labelId: string): Promise<boolean> => {
     const result = await pool.query(
       "INSERT INTO note_labels (note_id, label_id) VALUES ($1, $2) ON CONFLICT (note_id, label_id) DO NOTHING",
@@ -44,3 +44,4 @@ export const noteLabelQueries = {
     return result.rowCount ? result.rowCount > 0 : false;
   },
 };
+

@@ -1,7 +1,7 @@
-import { NoteDB } from "../../domain/notes/note.types";
-import pool from "../client";
+import pool from "../../db/client";
+import { NoteDB } from "./note.types";
 
-export const noteQueries = {
+export const noteRepository = {
   findAllWithLabels: async (
     userId: string
   ): Promise<(NoteDB & { label_ids: string[] })[]> => {

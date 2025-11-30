@@ -1,14 +1,16 @@
-import { noteLabelQueries } from "../../db/queries/noteLabels";
-import { noteQueries } from "../../db/queries/notes";
+import { noteLabelRepository } from "../noteLabels/noteLabels.repository";
 import { noteMappers } from "./note.mappers";
 import { NoteAPI, NoteCreateRequest, NoteUpdateRequest } from "./note.types";
+import { noteRepository } from "./notes.repository";
 
 export const noteService = {
-  findAll: async (userId: string): Promise<{
+  findAll: async (
+    userId: string
+  ): Promise<{
     notesById: Record<string, NoteAPI>;
     notesOrder: string[];
   }> => {
-    const rows = await noteQueries.findAllWithLabels(userId);
+    const rows = await noteRepository.findAllWithLabels(userId);
     const sortedRows = [...rows].sort((a, b) => a.order - b.order);
 
     const notesById: Record<string, NoteAPI> = {};
@@ -23,13 +25,10 @@ export const noteService = {
     return { notesById, notesOrder };
   },
 
-  create: async (
-    userId: string,
-    data: NoteCreateRequest
-  ): Promise<string> => {
-    const minOrder = await noteQueries.getMinOrder(userId);
+  create: async (userId: string, data: NoteCreateRequest): Promise<string> => {
+    const minOrder = await noteRepository.getMinOrder(userId);
 
-    const note = await noteQueries.create(
+    const note = await noteRepository.create(
       userId,
       data.id,
       minOrder,
@@ -41,7 +40,7 @@ export const noteService = {
     );
 
     if (Array.isArray(data.labelIds) && data.labelIds.length > 0) {
-      await noteLabelQueries.addLabelsToNote(note.id, data.labelIds);
+      await noteLabelRepository.addLabelsToNote(note.id, data.labelIds);
     }
 
     return note.id;
@@ -52,7 +51,7 @@ export const noteService = {
     id: string,
     data: NoteUpdateRequest
   ): Promise<string> => {
-    const note = await noteQueries.update(
+    const note = await noteRepository.update(
       userId,
       id,
       data.title,
@@ -66,21 +65,21 @@ export const noteService = {
   },
 
   delete: async (userId: string, id: string): Promise<boolean> => {
-    return await noteQueries.delete(userId, id);
+    return await noteRepository.delete(userId, id);
   },
 
   addLabel: async (noteId: string, labelId: string): Promise<void> => {
-    await noteLabelQueries.addLabelToNote(noteId, labelId);
+    await noteLabelRepository.addLabelToNote(noteId, labelId);
   },
 
   removeLabel: async (noteId: string, labelId: string): Promise<void> => {
-    await noteLabelQueries.removeLabelFromNote(noteId, labelId);
+    await noteLabelRepository.removeLabelFromNote(noteId, labelId);
   },
 
   reorder: async (userId: string, noteIds: string[]): Promise<void> => {
     const updates: { id: string; order: number }[] = noteIds.map(
       (id, index) => ({ id, order: index })
     );
-    await noteQueries.updateOrders(userId, updates);
+    await noteRepository.updateOrders(userId, updates);
   },
 };

@@ -1,7 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { userService } from "../domain/users/user.service";
+import { AuthError } from "../utils/AppError";
 import { verifyToken } from "../utils/jwt";
-import { AuthError } from "../errors/AppError";
+
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
 
 export const authenticate = async (
   req: Request,
@@ -26,6 +34,10 @@ export const authenticate = async (
     req.userId = userId;
     next();
   } catch (error) {
-    next(error instanceof AuthError ? error : new AuthError("Invalid or expired token"));
+    next(
+      error instanceof AuthError
+        ? error
+        : new AuthError("Invalid or expired token")
+    );
   }
 };
