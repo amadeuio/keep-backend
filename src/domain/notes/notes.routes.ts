@@ -23,7 +23,7 @@ const createNote = asyncHandler(
     }
 
     const noteId = await noteService.create(req.userId!, data);
-    res.status(201).json(noteId);
+    res.status(201).json({ id: noteId });
   }
 );
 
@@ -41,7 +41,7 @@ const updateNote = asyncHandler(
       throw new NotFoundError("Note");
     }
 
-    res.json(noteId);
+    res.json({ id: noteId });
   }
 );
 

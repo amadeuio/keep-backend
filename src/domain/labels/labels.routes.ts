@@ -21,7 +21,7 @@ const createLabel = asyncHandler(
     }
 
     const labelId = await labelService.create(req.userId!, data);
-    res.status(201).json(labelId);
+    res.status(201).json({ id: labelId });
   }
 );
 
@@ -43,7 +43,7 @@ const updateLabel = asyncHandler(
       throw new NotFoundError("Label");
     }
 
-    res.json(labelId);
+    res.json({ id: labelId });
   }
 );
 
