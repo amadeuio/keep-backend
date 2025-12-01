@@ -13,7 +13,6 @@ describe("Labels Endpoints", () => {
       const labelData = {
         id: uuidv4(),
         name: "Important",
-        color: "#FF0000",
       };
 
       const response = await createLabel(token, labelData);
@@ -129,7 +128,6 @@ describe("Labels Endpoints", () => {
       await createLabel(token, {
         id: labelId,
         name: "Original Name",
-        color: "#FF0000",
       });
 
       // Update the label
@@ -138,7 +136,6 @@ describe("Labels Endpoints", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({
           name: "Updated Name",
-          color: "#00FF00",
         });
 
       expect(response.status).toBe(200);

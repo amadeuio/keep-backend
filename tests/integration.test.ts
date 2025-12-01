@@ -80,7 +80,6 @@ describe("Notes and Labels Integration", () => {
         .send({
           id: labelId,
           name: "New Label",
-          color: "#FF0000",
         });
 
       expect(response.status).toBe(201);
