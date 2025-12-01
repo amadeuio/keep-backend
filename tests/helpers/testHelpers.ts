@@ -5,9 +5,6 @@ import { createApp } from "../../src/app";
 export const app = createApp();
 export const api = request(app);
 
-/**
- * Helper function to register a user
- */
 export async function registerUser(
   email: string = "test@example.com",
   password: string = "password123"
@@ -19,9 +16,6 @@ export async function registerUser(
   return response;
 }
 
-/**
- * Helper function to login a user
- */
 export async function loginUser(
   email: string = "test@example.com",
   password: string = "password123"
@@ -33,9 +27,6 @@ export async function loginUser(
   return response;
 }
 
-/**
- * Helper function to register and login a user, returning the token
- */
 export async function getAuthToken(
   email: string = `test${Date.now()}@example.com`,
   password: string = "password123"
@@ -45,9 +36,6 @@ export async function getAuthToken(
   return loginResponse.body.token;
 }
 
-/**
- * Helper function to create a note
- */
 export async function createNote(
   token: string,
   noteData: { id?: string; title?: string; content?: string } = {}
@@ -63,9 +51,6 @@ export async function createNote(
   return response;
 }
 
-/**
- * Helper function to create a label
- */
 export async function createLabel(
   token: string,
   labelData: { id?: string; name: string; color?: string }
