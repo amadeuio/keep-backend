@@ -9,17 +9,11 @@
     "dev": "nodemon --exec ts-node src/server.ts",
     "migrate": "ts-node db/run.ts migrate",
     "seed": "ts-node db/run.ts seed",
-    "migrate:test": "dotenv -e .env.test -- ts-node db/run.ts migrate",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "check": "tsc --noEmit",
     "test": "dotenv -e .env.test -- jest",
     "test:watch": "dotenv -e .env.test -- jest --watch",
-    "test:coverage": "dotenv -e .env.test -- jest --coverage",
-    "test:verbose": "dotenv -e .env.test -- jest --verbose",
-    "test:shell": "cd api-tests && ./demo.sh",
-    "test:auth:shell": "cd api-tests && ./test-auth-success.sh && ./test-auth-failures.sh",
-    "test:zod:shell": "cd api-tests && ./test-zod-validation.sh",
-    "test:all:shell": "npm run test:shell && npm run test:auth:shell && npm run test:zod:shell"
+    "test:coverage": "dotenv -e .env.test -- jest --coverage"
   },
   "repository": {
     "type": "git",
